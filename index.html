@@ -10,20 +10,21 @@
       font-family: sans-serif;
       background-color: #f0f0f0;
     }
-    canvas {
-      display: block;
-      margin: auto;
-      border: 1px solid #ccc;
-      background-color: white;
+    #container {
       position: relative;
-      z-index: 0;
+      width: 1200px;
+      height: 600px;
+      margin: auto;
     }
-    #labels {
+    canvas, svg, #labels {
       position: absolute;
       top: 0;
       left: 0;
+    }
+    #labels {
+      width: 100%;
+      height: 100%;
       pointer-events: none;
-      z-index: 10;
     }
     .label {
       position: absolute;
@@ -35,19 +36,14 @@
       white-space: nowrap;
       transform: translate(-50%, -50%);
     }
-    svg {
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 5;
-      pointer-events: none;
-    }
   </style>
 </head>
 <body>
-  <canvas id="mapCanvas" width="1200" height="600"></canvas>
-  <svg id="arrowLines" width="1200" height="600"></svg>
-  <div id="labels"></div>
+  <div id="container">
+    <canvas id="mapCanvas" width="1200" height="600"></canvas>
+    <svg id="arrowLines" width="1200" height="600"></svg>
+    <div id="labels"></div>
+  </div>
 
   <script>
     const canvas = document.getElementById("mapCanvas");
@@ -63,21 +59,20 @@
       '#A833FF', '#FFC733', '#8DFF33', '#33FFD9', '#FF3333', '#3333FF'
     ];
 
-const cities = [
-  { name: "New York", tz: "America/New_York", x: 340 },
-  { name: "São Paulo", tz: "America/Sao_Paulo", x: 380 },
-  { name: "London", tz: "Europe/London", x: 480 },
-  { name: "Berlin", tz: "Europe/Berlin", x: 510 },
-  { name: "Moscow", tz: "Europe/Moscow", x: 560 },
-  { name: "Dubai", tz: "Asia/Dubai", x: 625 },
-  { name: "Mumbai", tz: "Asia/Kolkata", x: 670 },
-  { name: "Bangkok", tz: "Asia/Bangkok", x: 735 },
-  { name: "Beijing", tz: "Asia/Shanghai", x: 780 },
-  { name: "Tokyo", tz: "Asia/Tokyo", x: 845 },
-  { name: "Sydney", tz: "Australia/Sydney", x: 940 },
-  { name: "Auckland", tz: "Pacific/Auckland", x: 1020 }
-];
-
+    const cities = [
+      { name: "New York", tz: "America/New_York", x: 340 },
+      { name: "São Paulo", tz: "America/Sao_Paulo", x: 380 },
+      { name: "London", tz: "Europe/London", x: 480 },
+      { name: "Berlin", tz: "Europe/Berlin", x: 510 },
+      { name: "Moscow", tz: "Europe/Moscow", x: 560 },
+      { name: "Dubai", tz: "Asia/Dubai", x: 625 },
+      { name: "Mumbai", tz: "Asia/Kolkata", x: 670 },
+      { name: "Bangkok", tz: "Asia/Bangkok", x: 735 },
+      { name: "Beijing", tz: "Asia/Shanghai", x: 780 },
+      { name: "Tokyo", tz: "Asia/Tokyo", x: 845 },
+      { name: "Sydney", tz: "Australia/Sydney", x: 940 },
+      { name: "Auckland", tz: "Pacific/Auckland", x: 1020 }
+    ];
 
     worldMapImg.onload = () => {
       ctx.drawImage(worldMapImg, 0, 0, canvas.width, canvas.height);
@@ -85,43 +80,42 @@ const cities = [
       setInterval(updateLabels, 1000);
     };
 
-   function updateLabels() {
-  labelsDiv.innerHTML = "";
-  arrowSVG.innerHTML = "";
+    function updateLabels() {
+      labelsDiv.innerHTML = "";
+      arrowSVG.innerHTML = "";
 
-  cities.forEach((city, index) => {
-    const time = new Date().toLocaleTimeString("en-US", {
-      timeZone: city.tz,
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    });
+      cities.forEach((city, index) => {
+        const time = new Date().toLocaleTimeString("en-US", {
+          timeZone: city.tz,
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        });
 
-    const x = city.x;
-    const y = canvas.height * 0.1;
-    const targetY = canvas.height * 0.6;
+        const x = city.x;
+        const y = 60;  // Top position for label
+        const targetY = 300; // Midpoint on map
 
-    const label = document.createElement("div");
-    label.className = "label";
-    label.style.left = `${x}px`;
-    label.style.top = `${y}px`;
-    label.style.border = `2px solid ${colors[index % colors.length]}`;
-    label.style.color = colors[index % colors.length];
-    label.textContent = `${city.name}: ${time}`;
-    labelsDiv.appendChild(label);
+        const label = document.createElement("div");
+        label.className = "label";
+        label.style.left = `${x}px`;
+        label.style.top = `${y}px`;
+        label.style.border = `2px solid ${colors[index % colors.length]}`;
+        label.style.color = colors[index % colors.length];
+        label.textContent = `${city.name}: ${time}`;
+        labelsDiv.appendChild(label);
 
-    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    line.setAttribute("x1", x);
-    line.setAttribute("y1", y + 10);
-    line.setAttribute("x2", x);
-    line.setAttribute("y2", targetY);
-    line.setAttribute("stroke", colors[index % colors.length]);
-    line.setAttribute("stroke-width", "2");
-    line.setAttribute("stroke-dasharray", "4 2");
-    arrowSVG.appendChild(line);
-  });
-}
-
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", x);
+        line.setAttribute("y1", y + 10);
+        line.setAttribute("x2", x);
+        line.setAttribute("y2", targetY);
+        line.setAttribute("stroke", colors[index % colors.length]);
+        line.setAttribute("stroke-width", "2");
+        line.setAttribute("stroke-dasharray", "4 2");
+        arrowSVG.appendChild(line);
+      });
+    }
   </script>
 </body>
 </html>

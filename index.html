@@ -63,20 +63,21 @@
       '#A833FF', '#FFC733', '#8DFF33', '#33FFD9', '#FF3333', '#3333FF'
     ];
 
-    const cities = [
-      { name: "New York", tz: "America/New_York", longitude: -74.006 },
-      { name: "São Paulo", tz: "America/Sao_Paulo", longitude: -46.633 },
-      { name: "London", tz: "Europe/London", longitude: -0.127 },
-      { name: "Berlin", tz: "Europe/Berlin", longitude: 13.405 },
-      { name: "Moscow", tz: "Europe/Moscow", longitude: 37.617 },
-      { name: "Dubai", tz: "Asia/Dubai", longitude: 55.296 },
-      { name: "Mumbai", tz: "Asia/Kolkata", longitude: 72.877 },
-      { name: "Bangkok", tz: "Asia/Bangkok", longitude: 100.501 },
-      { name: "Beijing", tz: "Asia/Shanghai", longitude: 116.407 },
-      { name: "Tokyo", tz: "Asia/Tokyo", longitude: 139.691 },
-      { name: "Sydney", tz: "Australia/Sydney", longitude: 151.209 },
-      { name: "Auckland", tz: "Pacific/Auckland", longitude: 174.763 }
-    ];
+const cities = [
+  { name: "New York", tz: "America/New_York", x: 340 },
+  { name: "São Paulo", tz: "America/Sao_Paulo", x: 380 },
+  { name: "London", tz: "Europe/London", x: 480 },
+  { name: "Berlin", tz: "Europe/Berlin", x: 510 },
+  { name: "Moscow", tz: "Europe/Moscow", x: 560 },
+  { name: "Dubai", tz: "Asia/Dubai", x: 625 },
+  { name: "Mumbai", tz: "Asia/Kolkata", x: 670 },
+  { name: "Bangkok", tz: "Asia/Bangkok", x: 735 },
+  { name: "Beijing", tz: "Asia/Shanghai", x: 780 },
+  { name: "Tokyo", tz: "Asia/Tokyo", x: 845 },
+  { name: "Sydney", tz: "Australia/Sydney", x: 940 },
+  { name: "Auckland", tz: "Pacific/Auckland", x: 1020 }
+];
+
 
     worldMapImg.onload = () => {
       ctx.drawImage(worldMapImg, 0, 0, canvas.width, canvas.height);
@@ -84,42 +85,43 @@
       setInterval(updateLabels, 1000);
     };
 
-    function updateLabels() {
-      labelsDiv.innerHTML = "";
-      arrowSVG.innerHTML = "";
+   function updateLabels() {
+  labelsDiv.innerHTML = "";
+  arrowSVG.innerHTML = "";
 
-      cities.forEach((city, index) => {
-        const time = new Date().toLocaleTimeString("en-US", {
-          timeZone: city.tz,
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit'
-        });
+  cities.forEach((city, index) => {
+    const time = new Date().toLocaleTimeString("en-US", {
+      timeZone: city.tz,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
 
-        const x = ((city.longitude + 180) / 360) * canvas.width;
-        const y = canvas.height * 0.1;
-        const targetY = canvas.height * 0.6;
+    const x = city.x;
+    const y = canvas.height * 0.1;
+    const targetY = canvas.height * 0.6;
 
-        const label = document.createElement("div");
-        label.className = "label";
-        label.style.left = `${x}px`;
-        label.style.top = `${y}px`;
-        label.style.border = `2px solid ${colors[index % colors.length]}`;
-        label.style.color = colors[index % colors.length];
-        label.textContent = `${city.name}: ${time}`;
-        labelsDiv.appendChild(label);
+    const label = document.createElement("div");
+    label.className = "label";
+    label.style.left = `${x}px`;
+    label.style.top = `${y}px`;
+    label.style.border = `2px solid ${colors[index % colors.length]}`;
+    label.style.color = colors[index % colors.length];
+    label.textContent = `${city.name}: ${time}`;
+    labelsDiv.appendChild(label);
 
-        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        line.setAttribute("x1", x);
-        line.setAttribute("y1", y + 10);
-        line.setAttribute("x2", x);
-        line.setAttribute("y2", targetY);
-        line.setAttribute("stroke", colors[index % colors.length]);
-        line.setAttribute("stroke-width", "2");
-        line.setAttribute("stroke-dasharray", "4 2");
-        arrowSVG.appendChild(line);
-      });
-    }
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    line.setAttribute("x1", x);
+    line.setAttribute("y1", y + 10);
+    line.setAttribute("x2", x);
+    line.setAttribute("y2", targetY);
+    line.setAttribute("stroke", colors[index % colors.length]);
+    line.setAttribute("stroke-width", "2");
+    line.setAttribute("stroke-dasharray", "4 2");
+    arrowSVG.appendChild(line);
+  });
+}
+
   </script>
 </body>
 </html>

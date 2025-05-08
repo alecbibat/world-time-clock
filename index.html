@@ -1,3 +1,19 @@
+# app.py
+from flask import Flask, send_file
+import os
+
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    return send_file('index.html')
+
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
+
+
+# index.html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,83 +28,136 @@
     }
     canvas {
       display: block;
-      background-color: #ffffff;
       margin: auto;
       border: 1px solid #ccc;
+      background-color: white;
+      position: relative;
+      z-index: 0;
     }
-    #timeBoxes {
+    #labels {
       position: absolute;
-      top: 10px;
-      left: 10px;
-      background-color: rgba(255, 255, 255, 0.9);
-      padding: 10px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .label {
+      position: absolute;
+      background-color: rgba(255, 255, 255, 0.95);
+      padding: 6px 10px;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      font-size: 14px;
+      white-space: nowrap;
+      transform: translate(-50%, -50%);
+    }
+    svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 5;
+      pointer-events: none;
     }
   </style>
 </head>
 <body>
   <canvas id="mapCanvas" width="1200" height="600"></canvas>
-  <div id="timeBoxes"></div>
+  <svg id="arrowLines" width="1200" height="600"></svg>
+  <div id="labels"></div>
 
   <script>
     const canvas = document.getElementById("mapCanvas");
     const ctx = canvas.getContext("2d");
-    const timeBoxes = document.getElementById("timeBoxes");
+    const labelsDiv = document.getElementById("labels");
+    const arrowSVG = document.getElementById("arrowLines");
 
     const worldMapImg = new Image();
     worldMapImg.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/World_map_blank_without_borders.svg/1200px-World_map_blank_without_borders.svg.png";
 
+    const colors = [
+      '#FF5733', '#33FF57', '#3357FF', '#FF33A6', '#33FFF2', '#FFA833',
+      '#A833FF', '#FFC733', '#8DFF33', '#33FFD9', '#FF3333', '#3333FF'
+    ];
+
+    const cities = [
+      { name: "New York", tz: "America/New_York", tzOffset: -5 },
+      { name: "São Paulo", tz: "America/Sao_Paulo", tzOffset: -3 },
+      { name: "London", tz: "Europe/London", tzOffset: 0 },
+      { name: "Berlin", tz: "Europe/Berlin", tzOffset: 1 },
+      { name: "Moscow", tz: "Europe/Moscow", tzOffset: 3 },
+      { name: "Dubai", tz: "Asia/Dubai", tzOffset: 4 },
+      { name: "Mumbai", tz: "Asia/Kolkata", tzOffset: 5.5 },
+      { name: "Bangkok", tz: "Asia/Bangkok", tzOffset: 7 },
+      { name: "Beijing", tz: "Asia/Shanghai", tzOffset: 8 },
+      { name: "Tokyo", tz: "Asia/Tokyo", tzOffset: 9 },
+      { name: "Sydney", tz: "Australia/Sydney", tzOffset: 10 },
+      { name: "Auckland", tz: "Pacific/Auckland", tzOffset: 12 }
+    ];
+
     worldMapImg.onload = () => {
       ctx.drawImage(worldMapImg, 0, 0, canvas.width, canvas.height);
-      drawTimeZoneLines();
+      drawTimeZoneBands();
+      updateLabels();
+      setInterval(updateLabels, 1000);
     };
 
-    function drawTimeZoneLines() {
-      for (let i = -12; i <= 12; i++) {
-        const x = ((i + 12) / 24) * canvas.width;
+    function drawTimeZoneBands() {
+      cities.forEach((city, index) => {
+        const x = ((city.tzOffset + 12) / 24) * canvas.width;
+        ctx.fillStyle = colors[index % colors.length] + '33';
+        ctx.fillRect(x - canvas.width / 48, 0, canvas.width / 24, canvas.height);
+        ctx.strokeStyle = colors[index % colors.length];
         ctx.beginPath();
         ctx.moveTo(x, 0);
         ctx.lineTo(x, canvas.height);
-        ctx.strokeStyle = '#ff0000';
-        ctx.setLineDash([5, 5]);
         ctx.stroke();
-      }
-      ctx.setLineDash([]);
+      });
     }
 
-    const cities = [
-      { name: "New York", tz: "America/New_York" },
-      { name: "São Paulo", tz: "America/Sao_Paulo" },
-      { name: "London", tz: "Europe/London" },
-      { name: "Berlin", tz: "Europe/Berlin" },
-      { name: "Moscow", tz: "Europe/Moscow" },
-      { name: "Dubai", tz: "Asia/Dubai" },
-      { name: "Mumbai", tz: "Asia/Kolkata" },
-      { name: "Bangkok", tz: "Asia/Bangkok" },
-      { name: "Beijing", tz: "Asia/Shanghai" },
-      { name: "Tokyo", tz: "Asia/Tokyo" },
-      { name: "Sydney", tz: "Australia/Sydney" },
-      { name: "Auckland", tz: "Pacific/Auckland" },
-    ];
+    function updateLabels() {
+      labelsDiv.innerHTML = "";
+      arrowSVG.innerHTML = "";
 
-    function updateTimes() {
-      timeBoxes.innerHTML = "";
-      cities.forEach(city => {
-        const now = new Date().toLocaleTimeString("en-US", {
+      cities.forEach((city, index) => {
+        const time = new Date().toLocaleTimeString("en-US", {
           timeZone: city.tz,
           hour: '2-digit',
           minute: '2-digit',
           second: '2-digit'
         });
-        const div = document.createElement("div");
-        div.textContent = `${city.name}: ${now}`;
-        timeBoxes.appendChild(div);
+
+        const x = ((city.tzOffset + 12) / 24) * canvas.width;
+        const y = canvas.height * 0.9;
+        const labelY = 50 + index * 40;
+
+        const label = document.createElement("div");
+        label.className = "label";
+        label.style.left = `${x}px`;
+        label.style.top = `${labelY}px`;
+        label.style.border = `2px solid ${colors[index % colors.length]}`;
+        label.style.color = colors[index % colors.length];
+        label.textContent = `${city.name}: ${time}`;
+        labelsDiv.appendChild(label);
+
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", x);
+        line.setAttribute("y1", labelY + 10);
+        line.setAttribute("x2", x);
+        line.setAttribute("y2", y);
+        line.setAttribute("stroke", colors[index % colors.length]);
+        line.setAttribute("stroke-width", "2");
+        line.setAttribute("stroke-dasharray", "4 2");
+        arrowSVG.appendChild(line);
       });
     }
-
-    updateTimes();
-    setInterval(updateTimes, 1000);
   </script>
 </body>
 </html>
+
+
+# requirements.txt
+flask
+
+
+# Procfile
+web: python app.py

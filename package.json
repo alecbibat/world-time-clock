@@ -1,0 +1,15 @@
+{
+  "name": "leaflet-world-clock",
+  "version": "1.0.0",
+  "description": "World map with real-time clocks using Leaflet",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=14"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

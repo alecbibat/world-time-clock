@@ -99,41 +99,42 @@
     }
 
     function updateLabels() {
-      labelsDiv.innerHTML = "";
-      arrowSVG.innerHTML = "";
+  labelsDiv.innerHTML = "";
+  arrowSVG.innerHTML = "";
 
-      cities.forEach((city, index) => {
-        const time = new Date().toLocaleTimeString("en-US", {
-          timeZone: city.tz,
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit'
-        });
+  cities.forEach((city, index) => {
+    const time = new Date().toLocaleTimeString("en-US", {
+      timeZone: city.tz,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
 
-        const x = ((city.tzOffset + 12) / 24) * canvas.width;
-        const y = canvas.height * 0.9;
-        const labelY = 50 + index * 40;
+    const x = ((city.tzOffset + 12) / 24) * canvas.width;
+    const y = canvas.height * 0.1; // place label near the top
 
-        const label = document.createElement("div");
-        label.className = "label";
-        label.style.left = `${x}px`;
-        label.style.top = `${labelY}px`;
-        label.style.border = `2px solid ${colors[index % colors.length]}`;
-        label.style.color = colors[index % colors.length];
-        label.textContent = `${city.name}: ${time}`;
-        labelsDiv.appendChild(label);
+    const label = document.createElement("div");
+    label.className = "label";
+    label.style.left = `${x}px`;
+    label.style.top = `${y}px`;
+    label.style.border = `2px solid ${colors[index % colors.length]}`;
+    label.style.color = colors[index % colors.length];
+    label.textContent = `${city.name}: ${time}`;
+    labelsDiv.appendChild(label);
 
-        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        line.setAttribute("x1", x);
-        line.setAttribute("y1", labelY + 10);
-        line.setAttribute("x2", x);
-        line.setAttribute("y2", y);
-        line.setAttribute("stroke", colors[index % colors.length]);
-        line.setAttribute("stroke-width", "2");
-        line.setAttribute("stroke-dasharray", "4 2");
-        arrowSVG.appendChild(line);
-      });
-    }
+    // Arrow line directly down to time zone bar
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    line.setAttribute("x1", x);
+    line.setAttribute("y1", y + 10); // just under label
+    line.setAttribute("x2", x);
+    line.setAttribute("y2", canvas.height * 0.5); // midpoint of band
+    line.setAttribute("stroke", colors[index % colors.length]);
+    line.setAttribute("stroke-width", "2");
+    line.setAttribute("stroke-dasharray", "4 2");
+    arrowSVG.appendChild(line);
+  });
+}
+
   </script>
 </body>
 </html>

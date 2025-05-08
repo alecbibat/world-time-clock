@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>World Time Zones</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background-color: #f0f0f0;
+    }
+    canvas {
+      display: block;
+      margin: auto;
+      border: 1px solid #ccc;
+      background-color: white;
+      position: relative;
+      z-index: 0;
+    }
+    #labels {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .label {
+      position: absolute;
+      background-color: rgba(255, 255, 255, 0.95);
+      padding: 6px 10px;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      font-size: 14px;
+      white-space: nowrap;
+      transform: translate(-50%, -50%);
+    }
+    svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 5;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="mapCanvas" width="1200" height="600"></canvas>
+  <svg id="arrowLines" width="1200" height="600"></svg>
+  <div id="labels"></div>
+
+  <script>
+    const canvas = document.getElementById("mapCanvas");
+    const ctx = canvas.getContext("2d");
+    const labelsDiv = document.getElementById("labels");
+    const arrowSVG = document.getElementById("arrowLines");
+
+    const worldMapImg = new Image();
+    worldMapImg.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/World_map_blank_without_borders.svg/1200px-World_map_blank_without_borders.svg.png";
+
+    const colors = [
+      '#FF5733', '#33FF57', '#3357FF', '#FF33A6', '#33FFF2', '#FFA833',
+      '#A833FF', '#FFC733', '#8DFF33', '#33FFD9', '#FF3333', '#3333FF'
+    ];
+
+    const cities = [
+      { name: "New York", tz: "America/New_York", longitude: -74.006 },
+      { name: "São Paulo", tz: "America/Sao_Paulo", longitude: -46.633 },
+      { name: "London", tz: "Europe/London", longitude: -0.127 },
+      { name: "Berlin", tz: "Europe/Berlin", longitude: 13.405 },
+      { name: "Moscow", tz: "Europe/Moscow", longitude: 37.617 },
+      { name: "Dubai", tz: "Asia/Dubai", longitude: 55.296 },
+      { name: "Mumbai", tz: "Asia/Kolkata", longitude: 72.877 },
+      { name: "Bangkok", tz: "Asia/Bangkok", longitude: 100.501 },
+      { name: "Beijing", tz: "Asia/Shanghai", longitude: 116.407 },
+      { name: "Tokyo", tz: "Asia/Tokyo", longitude: 139.691 },
+      { name: "Sydney", tz: "Australia/Sydney", longitude: 151.209 },
+      { name: "Auckland", tz: "Pacific/Auckland", longitude: 174.763 }
+    ];
+
+    worldMapImg.onload = () => {
+      ctx.drawImage(worldMapImg, 0, 0, canvas.width, canvas.height);
+      updateLabels();
+      setInterval(updateLabels, 1000);
+    };
+
+    function updateLabels() {
+      labelsDiv.innerHTML = "";
+      arrowSVG.innerHTML = "";
+
+      cities.forEach((city, index) => {
+        const time = new Date().toLocaleTimeString("en-US", {
+          timeZone: city.tz,
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        });
+
+        const x = ((city.longitude + 180) / 360) * canvas.width;
+        const y = canvas.height * 0.1;
+        const targetY = canvas.height * 0.6;
+
+        const label = document.createElement("div");
+        label.className = "label";
+        label.style.left = `${x}px`;
+        label.style.top = `${y}px`;
+        label.style.border = `2px solid ${colors[index % colors.length]}`;
+        label.style.color = colors[index % colors.length];
+        label.textContent = `${city.name}: ${time}`;
+        labelsDiv.appendChild(label);
+
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", x);
+        line.setAttribute("y1", y + 10);
+        line.setAttribute("x2", x);
+        line.setAttribute("y2", targetY);
+        line.setAttribute("stroke", colors[index % colors.length]);
+        line.setAttribute("stroke-width", "2");
+        line.setAttribute("stroke-dasharray", "4 2");
+        arrowSVG.appendChild(line);
+      });
+    }
+  </script>
+</body>
+</html>

@@ -4,10 +4,7 @@
   <meta charset="UTF-8" />
   <title>World Time Map</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet/dist/leaflet.css"
-  />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     html, body {
       height: 100%;
@@ -73,23 +70,45 @@
 
     const markers = [];
 
+    // Define U.S. time zones as vertical bars
+    const timeZones = [
+      { name: "Pacific", color: "#A0C4FF", minLon: -125, maxLon: -113 },
+      { name: "Mountain", color: "#BDB2FF", minLon: -113, maxLon: -100 },
+      { name: "Central", color: "#FFC6FF", minLon: -100, maxLon: -85 },
+      { name: "Eastern", color: "#FFFFFC", minLon: -85, maxLon: -67 }
+    ];
+
+    timeZones.forEach(zone => {
+      const rectangle = L.rectangle([
+        [-90, zone.minLon],
+        [90, zone.maxLon]
+      ], {
+        color: zone.color,
+        weight: 1,
+        fillOpacity: 0.2,
+        interactive: false
+      });
+      rectangle.addTo(map);
+    });
+
     cities.forEach(city => {
       const marker = L.marker([city.lat, city.lon]).addTo(map);
       const div = document.createElement("div");
       div.className = "popup";
-      div.innerHTML = \`
-        <div class="city-name">\${city.name}</div>
-        <div class="time" id="time-\${city.name.replace(/\s/g, '')}">\${getLocalTime(city.tz)}</div>
-      \`;
+      div.innerHTML = `
+        <div class="city-name">${city.name}</div>
+        <div class="time" id="time-${city.name.replace(/\s/g, '')}">${getLocalTime(city.tz)}</div>
+      `;
       marker.bindPopup(div);
-      markers.push({ id: \`time-\${city.name.replace(/\s/g, '')}\`, tz: city.tz });
+      markers.push({ id: `time-${city.name.replace(/\s/g, '')}`, tz: city.tz });
     });
 
-    // Live clock updates
     setInterval(() => {
-      markers.forEach(({ id, tz }) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = getLocalTime(tz);
+      markers.forEach(m => {
+        const el = document.getElementById(m.id);
+        if (el) {
+          el.textContent = getLocalTime(m.tz);
+        }
       });
     }, 1000);
   </script>
